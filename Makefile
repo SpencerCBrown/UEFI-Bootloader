@@ -21,6 +21,11 @@ LDFLAGS	 = -nostdlib -znocombreloc -T $(EFI_LDS) -shared \
 
 all: $(TARGET)
 
+clean:
+	rm -rf *.so
+	rm -rf *.efi
+	rm -rf *.o
+
 hello.so: $(OBJS)
 	ld $(LDFLAGS) $(OBJS) -o $@ -lefi -lgnuefi
 
