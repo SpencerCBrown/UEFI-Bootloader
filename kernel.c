@@ -1,4 +1,5 @@
 #include "kernel.h"
+#include "font8x8_basic.h"
 
 /*
  * Graphics Module Functionality:
@@ -11,7 +12,6 @@ uint32_t horizontalResolution;
 
 void kprint(char *output)
 {
-    // do nothing for now
 }
 
 void clear(uint8_t red, uint8_t green, uint8_t blue)
