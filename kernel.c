@@ -13,24 +13,23 @@ uint32_t horizontalResolution;
 //TODO: handle new line/carriage return
 void kprint(const char *output)
 {
-    int current_line = 0;
-    for (int i = 0; output[i] != '\0'; ++i) {
-        drawChar(output[i], current_line, i*8);
-    }
     // int current_line = 0;
-    // int current_column = 0;
-    // int character_index = 0;
-    // char c = output[character_index++];
-    // while (c != '\0') {
-    //     if (c == '\n') {
-    //         ++current_line;
-    //         current_column = 0;
-    //     } else {
-    //         drawChar(c, current_line, current_column);
-    //         ++current_column;
-    //     }
-    //     ++character_index;
+    // for (int i = 0; output[i] != '\0'; ++i) {
+    //     drawChar(output[i], current_line, i*8);
     // }
+    int current_line = 0;
+    int current_column = 0;
+    int character_index = 0;
+    char c;
+    while ((c = output[character_index++]) != '\0') {
+        if (c == '\n') {
+            ++current_line;
+            current_column = 0;
+        } else {
+            drawChar(c, current_line, current_column*8);
+            ++current_column;
+        }
+    }
 }
 
 //TODO support line number
