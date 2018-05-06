@@ -32,16 +32,14 @@ void setPixel(int r, int c, uint32_t rgb)
     *addr = rgb | 0xff000000;
 }
 
+
 Pixel createPixel(uint8_t red, uint8_t green, uint8_t blue)
 {
-    uint32_t pixel = 0xFF;
-    pixel <<= 6;
-    uint32_t color;
-    color = red;
-    pixel += (color << 4);
-    color = green;
-    pixel += (color << 2);
-    color = blue;
-    pixel += color;
+    uint32_t pixel = 0;
+    pixel = red;
+    pixel <<= 8;
+    pixel |= green;
+    pixel <<= 8;
+    pixel |= blue;
     return pixel;
 }

@@ -9,37 +9,34 @@
 
 void setMode();
 
-EFI_STATUS
-EFIAPI
-efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
-   InitializeLib(ImageHandle, SystemTable);
-   UINTN handle_count = 0;
-   EFI_HANDLE* handle_buffer;
-   EFI_STATUS status;
-   EFI_GRAPHICS_OUTPUT_PROTOCOL* gop;
-   UINTN mode_num;
-   EFI_GRAPHICS_OUTPUT_MODE_INFORMATION* gop_mode_info;
-   UINTN size_of_info;
+void setMode()
+{
+    UINTN handle_count = 0;
+    EFI_HANDLE* handle_buffer;
+    EFI_STATUS status;
+    EFI_GRAPHICS_OUTPUT_PROTOCOL* gop;
+    UINTN mode_num;
+    EFI_GRAPHICS_OUTPUT_MODE_INFORMATION* gop_mode_info;
+    UINTN size_of_info;
 
-   status = uefi_call_wrapper(BS->LocateHandleBuffer, 5, ByProtocol, &gEfiGraphicsOutputProtocolGuid, NULL, &handle_count, &handle_buffer);
-   if (status != EFI_SUCCESS) { //
-       while (1) {
-           Print(L"ERROR IN LocateHANDLEBuffer\n");
-           Print(L"NUMBER OF BUFFERS: %d", handle_count);
-           Print(L"ERROR CODE IS: %d", status);
-       }
-   }
+    status = uefi_call_wrapper(BS->LocateHandleBuffer, 5, ByProtocol, &gEfiGraphicsOutputProtocolGuid, NULL, &handle_count, &handle_buffer);
+    if (status != EFI_SUCCESS) { //
+        while (1) {
+            Print(L"ERROR IN LocateHANDLEBuffer\n");
+            Print(L"NUMBER OF BUFFERS: %d", handle_count);
+            Print(L"ERROR CODE IS: %d", status);
+        }
+    }
 
     status = uefi_call_wrapper(BS->HandleProtocol, 3, *handle_buffer, &gEfiGraphicsOutputProtocolGuid, (VOID **) &gop);
+    if (status != EFI_SUCCESS) {
+        while (1) {
+            Print(L"ERROR In HandleProtocol\n");
+            Print(L"ERROR CODE IS: %d", status);
+        }
+    }
 
-   if (status != EFI_SUCCESS) {
-       while (1) {
-           Print(L"ERROR In HandleProtocol\n");
-           Print(L"ERROR CODE IS: %d", status);
-       }
-   }
-
-   for (mode_num = 0; (status = uefi_call_wrapper(gop->QueryMode, 4, gop, mode_num, &size_of_info, &gop_mode_info )) == EFI_SUCCESS; mode_num++) {
+    for (mode_num = 0; (status = uefi_call_wrapper(gop->QueryMode, 4, gop, mode_num, &size_of_info, &gop_mode_info )) == EFI_SUCCESS; mode_num++) {
         Print(L"In Loop");
         if (gop_mode_info->HorizontalResolution > 300 &&
               gop_mode_info->VerticalResolution > 300 &&
@@ -60,7 +57,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
        }
    }
 
-    if (uefi_call_wrapper(gop->SetMode, 2, gop, mode_num) != EFI_SUCCESS) {
+   if (uefi_call_wrapper(gop->SetMode, 2, gop, mode_num) != EFI_SUCCESS) {
         while (1) {
             Print(L"ERROR In SetMode\n");
         }
@@ -70,7 +67,16 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
     verticalResolution = gop_mode_info->VerticalResolution;
     horizontalResolution = gop_mode_info->HorizontalResolution;
 
-    clear(255, 255, 255);
+}
+
+EFI_STATUS
+EFIAPI
+efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
+   InitializeLib(ImageHandle, SystemTable);
+
+   setMode();
+
+    clear(255, 0, 0);
     while(1) {
         ;
     }
