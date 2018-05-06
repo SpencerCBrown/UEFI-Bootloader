@@ -1,12 +1,13 @@
 #include <efi.h>
 #include <efilib.h>
 
+#include "kernel.h"
+
 #define DESIRED_HREZ            1600
 #define DESIRED_VREZ             900
 #define DESIRED_PIXEL_FORMAT    PixelBlueGreenRedReserved8BitPerColor
 
-void PreBootHalt( EFI_SIMPLE_TEXT_OUT_PROTOCOL* conerr, UINT16* msg );
-void setPixel(int r, int c, uint32_t rgb, EFI_GRAPHICS_OUTPUT_PROTOCOL* gop, uint32_t vres, uint32_t hres);
+void setMode();
 
 EFI_STATUS
 EFIAPI
@@ -19,10 +20,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
    UINTN mode_num;
    EFI_GRAPHICS_OUTPUT_MODE_INFORMATION* gop_mode_info;
    UINTN size_of_info;
-   //status = uefi_call_wrapper(BS->LocateHandleBuffer, ByProtocol, &gEfiGraphicsOutputProtocolGuid, NULL, &handle_count, handle_buffer);
-   //status = uefi_call_wrapper(BS->LocateHandleBuffer, ByProtocol, &gEfiGraphicsOutputProtocolGuid, NULL, &handle_count, &handle_buffer);
-   //status = BS->LocateHandleBuffer(EFI_LOCATE_SEARCH_TYPE.ByProtocol, &gEfiGraphicsOutputProtocolGuid, NULL, &handle_count, &handle_buffer);
-   //status = LibLocateHandle(ByProtocol, &gEfiGraphicsOutputProtocolGuid, NULL, &handle_count, &handle_buffer);
+
    status = uefi_call_wrapper(BS->LocateHandleBuffer, 5, ByProtocol, &gEfiGraphicsOutputProtocolGuid, NULL, &handle_count, &handle_buffer);
    if (status != EFI_SUCCESS) { //
        while (1) {
@@ -68,57 +66,18 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
         }
     }
 
-    uint32_t verticalResolution = gop_mode_info->VerticalResolution;
-    uint32_t horizontalResolution = gop_mode_info->HorizontalResolution;
+    lfb_address = (uint32_t) ((void*) gop->Mode->FrameBufferBase);
+    verticalResolution = gop_mode_info->VerticalResolution;
+    horizontalResolution = gop_mode_info->HorizontalResolution;
 
-    uint32_t pxl = 0x000032FF;
-    uint32_t pxlR = 0x00FF3200;
-
-    for (int i = 0; i < verticalResolution; ++i) {
-        for (int o = 0; o < horizontalResolution; ++o) {
-            setPixel(i, o, pxl, gop, verticalResolution, horizontalResolution);
-        }
-    }
-
-    uint32_t character[16*4] = {
-        0b00000000000011111111000000000000,0b00000000000011111111000000000000,0b00000000000011111111000000000000,0b00000000000011111111000000000000,
-        0b00000000111111111111111100000000,0b00000000111111111111111100000000,0b00000000111111111111111100000000,0b00000000111111111111111100000000,
-        0b00001111111100000000111111110000,0b00001111111100000000111111110000,0b00001111111100000000111111110000,0b00001111111100000000111111110000,
-        0b00001111111111111111111111110000,0b00001111111111111111111111110000,0b00001111111111111111111111110000,0b00001111111111111111111111110000,
-        0b00001111111100000000111111110000,0b00001111111100000000111111110000,0b00001111111100000000111111110000,0b00001111111100000000111111110000,
-        0b00001111111100000000111111110000,0b00001111111100000000111111110000,0b00001111111100000000111111110000,0b00001111111100000000111111110000,
-        0,0,0,0,
-        0,0,0,0,
-        0,0,0,0,
-        0,0,0,0,
-        0,0,0,0,
-        0,0,0,0,
-        0,0,0,0,
-        0,0,0,0,
-        0,0,0,0,
-        0,0,0,0,
-    };
-    for (int i = 0; i < 16*4; ++i) {
-        for (int k = 0; k < 8*4; ++k) {
-            int flag = (character[i] >> (32 - k)) & 1;
-            if (flag) {
-                setPixel(i, k, 0x00FFFFFF, gop, verticalResolution, horizontalResolution);
-            }
-        }
-    }
-
-    while (1) {
+    clear(255, 255, 255);
+    while(1) {
         ;
     }
 
-    return EFI_SUCCESS;
-}
+    while (1) {
+        __asm__ ("OUT 0x3FB ");
+    }
 
-void setPixel(int r, int c, uint32_t rgb, EFI_GRAPHICS_OUTPUT_PROTOCOL* gop, uint32_t vres, uint32_t hres)
-{
-    r *= 4;
-    c *= 4;
-    void* baseAddr = (void*) gop->Mode->FrameBufferBase;
-    int32_t *addr = baseAddr + c + r * hres;
-    *addr = rgb | 0xff000000;
+    return EFI_SUCCESS;
 }
