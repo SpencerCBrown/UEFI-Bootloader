@@ -72,11 +72,14 @@ void setMode()
 EFI_STATUS
 EFIAPI
 efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
-   InitializeLib(ImageHandle, SystemTable);
+    InitializeLib(ImageHandle, SystemTable);
 
-   setMode();
+    setMode();
 
-    clear(255, 0, 0);
+    clear(0, 0, 0);
+    const char* string = "Hello World!\nSpencer Brown :D";
+    kprint(string);
+
     while(1) {
         ;
     }
