@@ -13,10 +13,6 @@ uint32_t horizontalResolution;
 //TODO: handle new line/carriage return
 void kprint(const char *output)
 {
-    // int current_line = 0;
-    // for (int i = 0; output[i] != '\0'; ++i) {
-    //     drawChar(output[i], current_line, i*8);
-    // }
     int current_line = 0;
     int current_column = 0;
     int character_index = 0;

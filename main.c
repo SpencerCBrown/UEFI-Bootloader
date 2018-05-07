@@ -38,8 +38,8 @@ void setMode()
 
     for (mode_num = 0; (status = uefi_call_wrapper(gop->QueryMode, 4, gop, mode_num, &size_of_info, &gop_mode_info )) == EFI_SUCCESS; mode_num++) {
         Print(L"In Loop");
-        if (gop_mode_info->HorizontalResolution == 1600 &&
-              gop_mode_info->VerticalResolution == 900 &&
+        if (gop_mode_info->HorizontalResolution >= 800 &&
+              gop_mode_info->VerticalResolution >= 600 &&
               gop_mode_info->PixelFormat        == DESIRED_PIXEL_FORMAT)
             break;
     }
