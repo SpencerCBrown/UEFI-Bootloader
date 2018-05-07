@@ -3,6 +3,10 @@
 
 #include "kernel.h"
 
+/*
+ * This should handle all bootloader functionality.  e.g. setting boot video mode and getting VRAM LFB using UEFI Boot Services, etc.
+*/
+
 #define DESIRED_HREZ            1600
 #define DESIRED_VREZ             900
 #define DESIRED_PIXEL_FORMAT    PixelBlueGreenRedReserved8BitPerColor
