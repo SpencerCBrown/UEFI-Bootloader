@@ -1,11 +1,12 @@
 #include "graphics.h"
+#include "font8x8_basic.h"
 
 /*
  * Graphics Module Functionality:
  * Assume 32bit pixel format
 */
 
-uint32_t lfb_address;
+uint32_t* lfb_address;
 uint32_t verticalResolution;
 uint32_t horizontalResolution;
 
@@ -40,12 +41,29 @@ void clear(uint8_t red, uint8_t green, uint8_t blue)
             setPixel(i, o, pixel);
         }
     }
+    //fillRect(red, green, blue, horizontalResolution, verticalResolution);
+
+}
+
+//TODO: fix
+void fillRect(uint8_t red, uint8_t green, uint8_t blue, uint8_t width, uint8_t height)
+{
+    //uint8_t *addr = (uint8_t*) lfb_address;
+    uint32_t *addr = lfb_address;
+    Pixel pixel = createPixel(red, green, blue);
+    for (int i = 0; i < height; ++i) {
+        for (int o = 0; o < width; ++o) {
+            // addr[o*4] = red;
+            // addr[o*4 + 1] = green;
+            // addr[o*4 + 2] = blue;
+            addr[o] = pixel;
+        }
+        addr += (horizontalResolution);
+    }
 }
 
 void setPixel(int r, int c, uint32_t rgb)
 {
-    r *= 4;
-    c *= 4;
     uint32_t *addr = lfb_address + c + r * horizontalResolution;
     *addr = rgb | 0xff000000;
 }

@@ -67,7 +67,7 @@ void setMode()
         }
     }
 
-    lfb_address = (uint32_t) ((void*) gop->Mode->FrameBufferBase);
+    lfb_address = ((uint32_t*) gop->Mode->FrameBufferBase);
     verticalResolution = gop_mode_info->VerticalResolution;
     horizontalResolution = gop_mode_info->HorizontalResolution;
 
@@ -80,7 +80,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
 
     setMode();
 
-    clear(0, 0, 0);
+    clear(0, 255, 0);
     const char* string = "Hello World!\nSpencer Brown :D";
     kprint(string);
 
