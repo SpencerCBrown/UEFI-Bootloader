@@ -24,7 +24,7 @@ void drawChar(char character, int line, int column)
         for (int b = 0; b < 8; ++b) {
             uint8_t bit = character_line & 0b00000001;
             if (bit != 0) {
-                setPixel(line * 8 + p, column + b, 0xFFFFFFFF);
+                setPixel(line * 8 + p, 8*column + b, 0xFFFFFFFF);
             } else {
                 // No print
             }

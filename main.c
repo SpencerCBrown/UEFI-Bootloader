@@ -80,9 +80,10 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
 
     setMode();
 
-    clear(0, 255, 0);
-    const char* string = "Hello World!\nSpencer Brown :D";
-    kprint(string);
+    clear(0, 0, 0);
+    const char* string = "Hello World!\nSpencer # Brown :D";
+    // kprint(string);
+    kprintf(string, 122);
 
     while(1) {
         ;
