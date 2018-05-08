@@ -11,7 +11,7 @@ extern uint32_t verticalResolution;
 
 void clear(uint8_t red, uint8_t green, uint8_t blue);
 
-void fillRect(uint8_t red, uint8_t green, uint8_t blue, uint8_t width, uint8_t height);
+void fillRect(uint8_t red, uint8_t green, uint8_t blue, uint32_t width, uint32_t height);
 
 void drawChar(char character, int line, int column);
 

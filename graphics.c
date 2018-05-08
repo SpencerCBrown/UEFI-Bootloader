@@ -35,30 +35,19 @@ void drawChar(char character, int line, int column)
 
 void clear(uint8_t red, uint8_t green, uint8_t blue)
 {
-    Pixel pixel = createPixel(red, green, blue);
-    for (int i = 0; i < verticalResolution; ++i) {
-        for (int o = 0; o < horizontalResolution; ++o) {
-            setPixel(i, o, pixel);
-        }
-    }
-    //fillRect(red, green, blue, horizontalResolution, verticalResolution);
+    fillRect(red, green, blue, horizontalResolution, verticalResolution);
 
 }
 
 //TODO: fix
-void fillRect(uint8_t red, uint8_t green, uint8_t blue, uint8_t width, uint8_t height)
+void fillRect(uint8_t red, uint8_t green, uint8_t blue, uint32_t width, uint32_t height)
 {
-    //uint8_t *addr = (uint8_t*) lfb_address;
     uint32_t *addr = lfb_address;
     Pixel pixel = createPixel(red, green, blue);
     for (int i = 0; i < height; ++i) {
         for (int o = 0; o < width; ++o) {
-            // addr[o*4] = red;
-            // addr[o*4 + 1] = green;
-            // addr[o*4 + 2] = blue;
-            addr[o] = pixel;
+            addr[o + i*horizontalResolution] = pixel;
         }
-        addr += (horizontalResolution);
     }
 }
 
