@@ -1,5 +1,6 @@
 #include "kernel.h"
 
+// NEED to handle num = 0
 void drawNum(int num, int *line, int *column)
 {
     char buf[100]; // no more than 100 digits
@@ -58,7 +59,7 @@ void kprint(const char *output)
             current_column = 0;
         } else {
             // In the future we won't call drawChar directly, but rather write to a buffer that is drawn to screen by the graphics module.
-            drawChar(c, current_line, current_column*8);
+            drawChar(c, current_line, current_column);
             ++current_column;
         }
         if (c != '\0') {
