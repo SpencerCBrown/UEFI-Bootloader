@@ -12,6 +12,7 @@
 #define DESIRED_PIXEL_FORMAT    PixelBlueGreenRedReserved8BitPerColor
 
 void setMode();
+void setupMemory();
 
 void setMode()
 {
@@ -73,16 +74,42 @@ void setMode()
 
 }
 
+void setupMemory()
+{
+
+}
+
 EFI_STATUS
 EFIAPI
 efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
     InitializeLib(ImageHandle, SystemTable);
 
     setMode();
+    setupMemory();
 
-    clear(0, 255, 0);
-    const char* string = "Hello World!\nSpencer Brown :D";
-    kprint(string);
+    UINTN memory_map_size = 0;
+    EFI_MEMORY_DESCRIPTOR memory_map[30];
+    UINTN map_key = 0;
+    UINTN descriptor_size = 0;
+    UINT32 descriptor_version = 0;
+    EFI_STATUS status = 0;
+
+    status = uefi_call_wrapper(BS->GetMemoryMap, 5, &memory_map_size, &memory_map, &map_key, &descriptor_size, &descriptor_version);
+    clear(0, 0, 0);
+    if (status != EFI_SUCCESS) {
+        if (status == EFI_BUFFER_TOO_SMALL) {
+            kprint("Buffer too small.");
+            kprint("\nSize needed: ");
+        } else if (status == EFI_INVALID_PARAMETER) {
+            kprint("Something null...");
+        } else {
+            kprint("Something, somethiing.. bizarre.");
+        }
+    }
+
+    // clear(0, 255, 0);
+    // const char* string = "Hello World!\nSpencer Brown :D";
+    // kprint(string);
 
     while(1) {
         ;
