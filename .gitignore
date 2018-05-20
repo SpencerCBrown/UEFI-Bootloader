@@ -2,3 +2,6 @@
 *.efi
 *.o
 .vscode/
+*.efi
+vm/log/
+disk/
