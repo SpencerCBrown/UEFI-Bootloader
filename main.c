@@ -118,18 +118,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
                 Print(L"Second call to GetMemoryMap failed for some reason.");
             } else {
                 Print(L"Second call to GetMemoryMap succeeded.\n");
-                char * mem = (char*) memory_map;
-                for (int i = 0; i < (memory_map_size / descriptor_size); ++i) {
-                    EFI_MEMORY_DESCRIPTOR desc = *( (EFI_MEMORY_DESCRIPTOR*) mem);
-                    Print(L"sizeof(EFI_MEMORY_DESCRIPTOR):\t%d", sizeof(desc));
-                    Print(L"descriptor_size:\t%d", descriptor_size);
-                    // Print(L"Physical Address of i-th memory descriptor:\t%x\n", desc.PhysicalStart);
-                    // Print(L"Virtual Address of i-th memory descriptor:\t%x\n", desc.VirtualStart);
-                    // Print(L"Memory Type of i-th memory descriptor:\t%d\n", desc.Type);
-                    uefi_call_wrapper(BS->Stall, 1, 4000000);
-
-                    mem += descriptor_size;
-                }
+                printMemoryMap(memory_map, memory_map_size, descriptor_size);
             }
 
         } else {

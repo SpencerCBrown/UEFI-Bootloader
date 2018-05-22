@@ -1,6 +1,6 @@
 ARCH	    = $(shell uname -m | sed s,i[3456789]86,ia32,)
 
-OBJS	    = main.o kernel.o graphics.o
+OBJS	    = main.o kernel.o graphics.o utils.o
 TARGET	  = hello.efi
 
 EFIINC	  = /usr/include/efi
