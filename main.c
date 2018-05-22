@@ -79,45 +79,68 @@ void setupMemory()
 
 }
 
+void zero_memory(void *buf, int length)
+{
+    char *bytes = (char*) buf;
+    for (int i = 0; i < length; ++i) {
+        bytes[i] = 0;
+    }
+}
+
 EFI_STATUS
 EFIAPI
 efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
     InitializeLib(ImageHandle, SystemTable);
 
-    setMode();
-    setupMemory();
+    EFI_STATUS status = EFI_SUCCESS;
 
-    UINTN memory_map_size = 2350;
-    EFI_MEMORY_DESCRIPTOR *memory_map;
-    EFI_MEMORY_TYPE mem_type = EfiLoaderData;
-    uefi_call_wrapper(BS->AllocatePool, 3, mem_type, memory_map_size, memory_map);
+    EFI_MEMORY_DESCRIPTOR *memory_map = NULL;
+    UINT32 version = 0;
     UINTN map_key = 0;
     UINTN descriptor_size = 0;
-    UINT32 descriptor_version = 0;
-    EFI_STATUS status = 0;
+    UINTN memory_map_size = 0;
 
-    status = uefi_call_wrapper(BS->GetMemoryMap, 5, &memory_map_size, &memory_map, &map_key, &descriptor_size, &descriptor_version);
-    clear(0, 0, 0);
-    if (status != EFI_SUCCESS) {
-        if (status == EFI_BUFFER_TOO_SMALL) {
-            kprint("Buffer too small.");
-            kprintf("\nSize needed: #", memory_map_size);
-        } else if (status == EFI_INVALID_PARAMETER) {
-            kprint("Something null...");
+    uefi_call_wrapper(ST->ConOut->ClearScreen, 1, ST->ConOut);
+
+    status = uefi_call_wrapper(BS->GetMemoryMap, 5, &memory_map_size, memory_map, &map_key, &descriptor_size, &version);
+    // descriptor size and version should be correct values.  memory_map_size should be needed size.
+
+    if (status == EFI_BUFFER_TOO_SMALL) {
+        UINTN encompassing_size = memory_map_size + (2 * descriptor_size);
+        void *buffer = NULL;
+        status = uefi_call_wrapper(BS->AllocatePool, 3, EfiLoaderData, encompassing_size, &buffer);
+        if (status == EFI_SUCCESS) {
+            memory_map = (EFI_MEMORY_DESCRIPTOR*) buffer;
+            memory_map_size = encompassing_size;
+
+            status = uefi_call_wrapper(BS->GetMemoryMap, 5, &memory_map_size, memory_map, &map_key, &descriptor_size, &version);
+            if (status != EFI_SUCCESS) {
+                Print(L"Second call to GetMemoryMap failed for some reason.");
+            } else {
+                Print(L"Second call to GetMemoryMap succeeded.\n");
+                char * mem = (char*) memory_map;
+                for (int i = 0; i < (memory_map_size / descriptor_size); ++i) {
+                    EFI_MEMORY_DESCRIPTOR desc = *( (EFI_MEMORY_DESCRIPTOR*) mem);
+                    Print(L"sizeof(EFI_MEMORY_DESCRIPTOR):\t%d", sizeof(desc));
+                    Print(L"descriptor_size:\t%d", descriptor_size);
+                    // Print(L"Physical Address of i-th memory descriptor:\t%x\n", desc.PhysicalStart);
+                    // Print(L"Virtual Address of i-th memory descriptor:\t%x\n", desc.VirtualStart);
+                    // Print(L"Memory Type of i-th memory descriptor:\t%d\n", desc.Type);
+                    uefi_call_wrapper(BS->Stall, 1, 4000000);
+
+                    mem += descriptor_size;
+                }
+            }
+
         } else {
-            kprint("Something, somethiing.. bizarre.");
+            Print(L"AllocatePool failure.");
         }
+    } else if (status == EFI_SUCCESS) { // shouldn't happen.
+        Print(L"First call to GetMemoryMap should never succeed... ???");
     } else {
-        kprint("IT WORKED!!");
+        Print(L"(First) GetMemoryMap usage failure.");
     }
 
-    // clear(0, 0, 0);
-    // const char* string = "Hello World!\nSpencer Brown #";
-    // kprintf(string, 22081);
-
-    while(1) {
-        ;
-    }
 
     return EFI_SUCCESS;
 }

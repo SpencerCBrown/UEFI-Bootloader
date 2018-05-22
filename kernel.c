@@ -1,10 +1,16 @@
 #include "kernel.h"
 
 // NEED to handle num = 0
-void drawNum(int num, int *line, int *column)
+void drawNum(uint64_t num, int *line, int *column)
 {
     char buf[100]; // no more than 100 digits
     int count;
+
+    if (num == 0) {
+        count = 1;
+        buf[0] = '0';
+    }
+
     for (count = 0; num > 0; ++count) {
         int digit = num % 10;
         char literal_digit = digit + 48; // convert from int to ascii char
@@ -19,7 +25,7 @@ void drawNum(int num, int *line, int *column)
 }
 
 //TODO (for this and reg kprint) add protection for when column is past end of screen?
-void kprintf(const char *output, int num)
+void kprintf(const char *output, uint64_t num)
 {
     int current_line = 0;
     int current_column = 0;
