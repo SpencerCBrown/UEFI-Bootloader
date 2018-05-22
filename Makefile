@@ -1,6 +1,11 @@
 ARCH	    = $(shell uname -m | sed s,i[3456789]86,ia32,)
 
-OBJS	    = main.o kernel.o graphics.o utils.o
+# Boot-Loader
+BOOTLOADER_OBJS = $(addprefix Boot/, main.o utils.o) #Boot/main.o Boot/utils.o
+#Kernel
+KERNEL_OBJS = $(addprefix System/, kernel.o graphics.o)
+
+OBJS	    = Boot/main.o Boot/utils.o
 TARGET	  = hello.efi
 
 EFIINC	  = /usr/include/efi
@@ -26,10 +31,10 @@ clean:
 	rm -rf *.efi
 	rm -rf *.o
 
-hello.so: $(OBJS)
-	ld $(LDFLAGS) $(OBJS) -o $@ -lefi -lgnuefi
-
 %.efi: %.so
 	objcopy -j .text -j .sdata -j .data -j .dynamic \
 		-j .dynsym  -j .rel -j .rela -j .reloc \
 		--target=efi-app-$(ARCH) $^ $@
+
+hello.so: $(BOOTLOADER_OBJS)
+	ld $(LDFLAGS) $(OBJS) -o $@ -lefi -lgnuefi
