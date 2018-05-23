@@ -1,6 +1,8 @@
 #include <efi.h>
 #include <efilib.h>
 
+#include "utils.h"
+
 /*
  * This should handle all bootloader functionality.  e.g. setting boot video mode and getting VRAM LFB using UEFI Boot Services, etc.
 */
