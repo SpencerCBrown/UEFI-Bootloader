@@ -1,5 +1,10 @@
 #include "kernel.h"
 
+void kernel_main()
+{
+    kprint("HELLO");
+}
+
 // NEED to handle num = 0
 void drawNum(uint64_t num, int *line, int *column)
 {
