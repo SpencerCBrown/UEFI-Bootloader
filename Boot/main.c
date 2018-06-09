@@ -16,7 +16,6 @@ uint32_t verticalResolution;
 uint32_t horizontalResolution;
 
 void setMode();
-void setupMemory();
 
 void setMode()
 {
@@ -78,19 +77,6 @@ void setMode()
 
 }
 
-void setupMemory()
-{
-
-}
-
-void zero_memory(void *buf, int length)
-{
-    char *bytes = (char*) buf;
-    for (int i = 0; i < length; ++i) {
-        bytes[i] = 0;
-    }
-}
-
 EFI_STATUS
 EFIAPI
 efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
@@ -134,6 +120,8 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
         Print(L"(First) GetMemoryMap usage failure.");
     }
 
+    // MEMORY MAP IS FOUND.  CONTINUE BOOT PROCESS...
+    
 
     return EFI_SUCCESS;
 }

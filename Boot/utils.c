@@ -16,3 +16,11 @@ void printMemoryMap(EFI_MEMORY_DESCRIPTOR* map, UINTN map_size, UINTN descriptor
         mem += descriptor_size;
     }
 }
+
+void zero_memory(void *buf, int length)
+{
+    char *bytes = (char*) buf;
+    for (int i = 0; i < length; ++i) {
+        bytes[i] = 0;
+    }
+}

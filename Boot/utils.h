@@ -5,4 +5,6 @@
 
 void printMemoryMap(EFI_MEMORY_DESCRIPTOR* map, UINTN map_size, UINTN descriptor_size);
 
+void zero_memory(void *buf, int length);
+
 #endif
