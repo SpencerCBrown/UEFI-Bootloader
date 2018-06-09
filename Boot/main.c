@@ -16,6 +16,7 @@ uint32_t verticalResolution;
 uint32_t horizontalResolution;
 
 void setMode();
+void GetMemoryMap(EFI_MEMORY_DESCRIPTOR **memory_map, UINTN *descriptor_size, UINTN *memory_map_size, UINTN *map_key);
 
 void setMode()
 {
@@ -77,6 +78,42 @@ void setMode()
 
 }
 
+void GetMemoryMap(EFI_MEMORY_DESCRIPTOR **memory_map_ptr, UINTN *descriptor_size, UINTN *memory_map_size, UINTN *map_key)
+{
+    EFI_STATUS status = EFI_SUCCESS;
+    UINT32 version = 0;
+    EFI_MEMORY_DESCRIPTOR *memory_map = NULL;
+    *descriptor_size = 0;
+    *memory_map_size = 0;
+    *map_key = 0;
+
+    status = uefi_call_wrapper(BS->GetMemoryMap, 5, memory_map_size, memory_map, map_key, descriptor_size, &version);
+
+    if (status == EFI_BUFFER_TOO_SMALL) {
+        UINTN encompassing_size = *memory_map_size + (2 * (*descriptor_size));
+        void *buffer = NULL;
+        status = uefi_call_wrapper(BS->AllocatePool, 3, EfiLoaderData, encompassing_size, &buffer);
+        if (status == EFI_SUCCESS) {
+            memory_map = (EFI_MEMORY_DESCRIPTOR*) buffer;
+            *memory_map_size = encompassing_size;
+
+            status = uefi_call_wrapper(BS->GetMemoryMap, 5, memory_map_size, memory_map, map_key, descriptor_size, &version);
+            if (status != EFI_SUCCESS) {
+                Print(L"Second call to GetMemoryMap failed for some reason.");
+            } else {
+                Print(L"Second call to GetMemoryMap succeeded.\n");
+            }
+        } else {
+            Print(L"Failure allocating memory pool");
+        }
+    } else if (status == EFI_SUCCESS) { // shouldn't happen.
+        Print(L"First call to GetMemoryMap should never succeed... ???");
+    } else {
+        Print(L"(First) GetMemoryMap usage failure.");
+    }
+    *memory_map_ptr = memory_map;
+}
+
 EFI_STATUS
 EFIAPI
 efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
@@ -89,39 +126,8 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
     UINTN map_key = 0;
     UINTN descriptor_size = 0;
     UINTN memory_map_size = 0;
-
-    uefi_call_wrapper(ST->ConOut->ClearScreen, 1, ST->ConOut);
-
-    status = uefi_call_wrapper(BS->GetMemoryMap, 5, &memory_map_size, memory_map, &map_key, &descriptor_size, &version);
-    // descriptor size and version should be correct values.  memory_map_size should be needed size.
-
-    if (status == EFI_BUFFER_TOO_SMALL) {
-        UINTN encompassing_size = memory_map_size + (2 * descriptor_size);
-        void *buffer = NULL;
-        status = uefi_call_wrapper(BS->AllocatePool, 3, EfiLoaderData, encompassing_size, &buffer);
-        if (status == EFI_SUCCESS) {
-            memory_map = (EFI_MEMORY_DESCRIPTOR*) buffer;
-            memory_map_size = encompassing_size;
-
-            status = uefi_call_wrapper(BS->GetMemoryMap, 5, &memory_map_size, memory_map, &map_key, &descriptor_size, &version);
-            if (status != EFI_SUCCESS) {
-                Print(L"Second call to GetMemoryMap failed for some reason.");
-            } else {
-                Print(L"Second call to GetMemoryMap succeeded.\n");
-                printMemoryMap(memory_map, memory_map_size, descriptor_size);
-            }
-
-        } else {
-            Print(L"AllocatePool failure.");
-        }
-    } else if (status == EFI_SUCCESS) { // shouldn't happen.
-        Print(L"First call to GetMemoryMap should never succeed... ???");
-    } else {
-        Print(L"(First) GetMemoryMap usage failure.");
-    }
-
-    // MEMORY MAP IS FOUND.  CONTINUE BOOT PROCESS...
-    
+    GetMemoryMap(&memory_map, &descriptor_size, &memory_map_size, &map_key);
+    printMemoryMap(memory_map, memory_map_size, descriptor_size);
 
     return EFI_SUCCESS;
 }
