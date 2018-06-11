@@ -88,7 +88,7 @@ static const uint8_t PF_W           =   0x2;
 static const uint8_t PF_R           =   0x4;
 static const uint32_t PF_MASKOS     =   0x00FF0000;
 static const uint32_t PF_MASKPROC   =   0xFF000000;
-constexpr uint8_t TRIAL = 0;
+static const uint8_t TRIAL = 0;
 
 typedef struct
 {
