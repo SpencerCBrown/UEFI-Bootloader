@@ -15,10 +15,10 @@ uint32_t* lfb_address;
 uint32_t verticalResolution;
 uint32_t horizontalResolution;
 
-void setMode();
+void setVideoMode();
 void GetMemoryMap(EFI_MEMORY_DESCRIPTOR **memory_map, UINTN *descriptor_size, UINTN *memory_map_size, UINTN *map_key);
 
-void setMode()
+void setVideoMode()
 {
     UINTN handle_count = 0;
     EFI_HANDLE* handle_buffer;
@@ -99,17 +99,17 @@ void GetMemoryMap(EFI_MEMORY_DESCRIPTOR **memory_map_ptr, UINTN *descriptor_size
 
             status = uefi_call_wrapper(BS->GetMemoryMap, 5, memory_map_size, memory_map, map_key, descriptor_size, &version);
             if (status != EFI_SUCCESS) {
-                Print(L"Second call to GetMemoryMap failed for some reason.");
+                // Print(L"Second call to GetMemoryMap failed for some reason.");
             } else {
-                Print(L"Second call to GetMemoryMap succeeded.\n");
+                // Print(L"Second call to GetMemoryMap succeeded.\n");
             }
         } else {
-            Print(L"Failure allocating memory pool");
+            // Print(L"Failure allocating memory pool");
         }
     } else if (status == EFI_SUCCESS) { // shouldn't happen.
-        Print(L"First call to GetMemoryMap should never succeed... ???");
+        // Print(L"First call to GetMemoryMap should never succeed... ???");
     } else {
-        Print(L"(First) GetMemoryMap usage failure.");
+        // Print(L"(First) GetMemoryMap usage failure.");
     }
     *memory_map_ptr = memory_map;
 }
@@ -127,7 +127,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
     UINTN descriptor_size = 0;
     UINTN memory_map_size = 0;
     GetMemoryMap(&memory_map, &descriptor_size, &memory_map_size, &map_key);
-    printMemoryMap(memory_map, memory_map_size, descriptor_size);
+    //printMemoryMap(memory_map, memory_map_size, descriptor_size);
 
     return EFI_SUCCESS;
 }
