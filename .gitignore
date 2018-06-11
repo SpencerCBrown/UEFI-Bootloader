@@ -1,9 +1,11 @@
 *.so
 *.efi
 *.o
+*.bin
 .vscode/
 *.efi
 vm/log/
 disk/
 vm/hda-contents/NvVars
 vm/hda-contents/EFI/Boot/Bootx64.efi
+build/

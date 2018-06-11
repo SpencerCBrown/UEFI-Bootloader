@@ -1,7 +1,7 @@
 ARCH	    = $(shell uname -m | sed s,i[3456789]86,ia32,)
 
 # Boot-Loader
-BOOTLOADER_OBJS = $(addprefix Boot/, main.o utils.o) #Boot/main.o Boot/utils.o
+BOOTLOADER_OBJS = $(addprefix Boot/, main.o utils.o)
 #Kernel
 KERNEL_OBJS = $(addprefix System/, kernel.o graphics.o)
 
