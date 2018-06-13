@@ -88,7 +88,7 @@ void load_kernel(EFI_HANDLE ImageHandle)
         Print(L"load_kernel: ERROR reading file.\t%d\n", status);
     }
 
-    print_ehdr(buffer);
+    //print_ehdr(buffer);
 
 }
 
