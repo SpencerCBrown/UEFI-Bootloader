@@ -34,12 +34,44 @@ void open_kernel_image(EFI_HANDLE ImageHandle, EFI_FILE_PROTOCOL **file)
 
     Print(L"REACHED FILE PROTOCOL::Open call.\n");
 
-    status = uefi_call_wrapper(filesystem->Open, 5, filesystem, file, L"simple.txt", EFI_FILE_MODE_READ, 0);
+    status = uefi_call_wrapper(filesystem->Open, 5, filesystem, file, L"kernel.bin", EFI_FILE_MODE_READ, 0);
     if (status != EFI_SUCCESS) {
         Print(L"load_kernel: Error opening file.\n");
     }
 
+    Print(L"EXITING");
+
     return;
+}
+
+void print_ehdr(void *buf)
+{
+    char *buffer = (char*) buf;
+
+    // IDENT
+    for (int i = 0; i < 16; ++i) {
+        Print(L"data %d:\t%d\n", i, buffer[i]);
+    }
+    uefi_call_wrapper(BS->Stall, 1, 1000000);
+     uefi_call_wrapper(ST->ConOut->ClearScreen, 1, ST->ConOut);
+
+    for (int i = 16; i < 32; ++i) {
+        Print(L"data %d:\t%d\n", i, buffer[i]);
+    }
+    uefi_call_wrapper(BS->Stall, 1, 9000000);
+     uefi_call_wrapper(ST->ConOut->ClearScreen, 1, ST->ConOut);
+
+    for (int i = 32; i < 48; ++i) {
+        Print(L"data %d:\t%d\n", i, buffer[i]);
+    }
+    uefi_call_wrapper(BS->Stall, 1, 9000000);
+     uefi_call_wrapper(ST->ConOut->ClearScreen, 1, ST->ConOut);
+
+    for (int i = 48; i < 64; ++i) {
+        Print(L"data %d:\t%d\n", i, buffer[i]);
+    }
+    uefi_call_wrapper(BS->Stall, 1, 9000000);
+     uefi_call_wrapper(ST->ConOut->ClearScreen, 1, ST->ConOut);
 }
 
 void load_kernel(EFI_HANDLE ImageHandle)
@@ -48,16 +80,16 @@ void load_kernel(EFI_HANDLE ImageHandle)
     EFI_FILE_PROTOCOL *file;
     open_kernel_image(ImageHandle, &file);
 
-    char buffer[16];
-    UINTN size = 16;
+    char *buffer = NULL;
+    uefi_call_wrapper(BS->AllocatePool, 3, EfiLoaderData, 64, &buffer);
+    UINTN size = 64;
     uefi_call_wrapper(file->Read, 3, file, &size, buffer);
     if (status != EFI_SUCCESS) {
         Print(L"load_kernel: ERROR reading file.\t%d\n", status);
     }
 
-    for (int i = 0; i < size; ++i) {
-        Print(L"data %d:\t%d\n", i, buffer[i]);
-    }
+    print_ehdr(buffer);
+
 }
 
 EFI_STATUS
