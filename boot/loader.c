@@ -1,3 +1,6 @@
+#include <efi.h>
+#include <efilib.h>
+
 #include "loader.h"
 
 void open_kernel_image(EFI_HANDLE ImageHandle, EFI_FILE_PROTOCOL **file)
@@ -65,7 +68,8 @@ void print_ehdr(void *buf)
     uefi_call_wrapper(ST->ConOut->ClearScreen, 1, ST->ConOut);
 }
 
-void parse_ehdr(void *buf, Elf64_Ehdr *header)
+/* header will be pointer to Elf64_Ehdr buffer */
+void parse_ehdr(void * const buf, Elf64_Ehdr *header)
 {
     EFI_STATUS status;
     char *buffer = (char*) buf;
@@ -103,21 +107,74 @@ void parse_ehdr(void *buf, Elf64_Ehdr *header)
     *header = elf;
 }
 
+/* phdr will be pointer to Elf64_Phdr buffer */
+void parse_phdr(void * const buffer, Elf64_Ehdr ehdr, Elf64_Phdr **phdr)
+{
+    EFI_STATUS status;
+    char *buf = (char*) buffer;
+    buf += ehdr.e_phoff;
+    status = uefi_call_wrapper(BS->AllocatePool, 3, EfiLoaderData, ehdr.e_phnum * sizeof(Elf64_Phdr), (void **) phdr);
+
+
+    for (int i = 0; i < ehdr.e_phnum; ++i) {
+        Elf64_Phdr *p = *phdr + i;
+        p->p_type = *((Elf64_Word*) buf);
+        buf += sizeof(Elf64_Word);
+        p->p_flags = *((Elf64_Word*) buf);
+        buf += sizeof(Elf64_Word);
+        p->p_offset = *((Elf64_Off*) buf);
+        buf += sizeof(Elf64_Off);
+        p->p_vaddr = *((Elf64_Addr*) buf);
+        buf += sizeof(Elf64_Addr);
+        p->p_paddr = *((Elf64_Addr*) buf);
+        buf += sizeof(Elf64_Addr);
+        p->p_filesz = *((Elf64_Xword*) buf);
+        buf += sizeof(Elf64_Xword);
+        p->p_memsz = *((Elf64_Xword*) buf);
+        buf += sizeof(Elf64_Xword);
+        p->p_align = *((Elf64_Xword*) buf);
+        buf += sizeof(Elf64_Xword);
+    }
+}
+
+/* Takes Elf64_Phdr buffer and loads each to memory */
+void elf_load_phdr_buffer(Elf64_Ehdr elf_header, Elf64_Phdr *p_headers)
+{
+    EFI_STATUS status;
+    int pheader_count = elf_header.e_phnum;
+    status = uefi_call_wrapper(BS->AllocatePool, 3, EfiLoaderData, pheader_count * sizeof(Elf64_Phdr), (void **) p_headers);
+}
+
+int elf_calculate_load_memsz(Elf64_Ehdr ehdr)
+{
+    return 0;
+}
+
 void load_kernel(EFI_HANDLE ImageHandle)
 {
     EFI_STATUS status;
     EFI_FILE_PROTOCOL *file;
     open_kernel_image(ImageHandle, &file);
 
+    EFI_FILE_INFO *file_info = NULL;
+    UINTN bufsize = sizeof(EFI_FILE_INFO) + 100;
+    status = uefi_call_wrapper(BS->AllocatePool, 3, EfiLoaderData, bufsize, &file_info);
+    status = uefi_call_wrapper(file->GetInfo, 4, file, &gEfiFileInfoGuid, &bufsize, file_info);
+    if (status != EFI_SUCCESS) {
+        Print(L"ERROR IN load_kernel.  Problem with EFI_FILE_PROTOCOL::GetInfo%d\n", status);
+    }
+
+    UINT64 file_size = file_info->FileSize;
+
     char *buffer = NULL;
-    uefi_call_wrapper(BS->AllocatePool, 3, EfiLoaderData, 64, &buffer);
-    UINTN size = 64;
-    uefi_call_wrapper(file->Read, 3, file, &size, buffer);
+    uefi_call_wrapper(BS->AllocatePool, 3, EfiLoaderData, file_size, &buffer);
+    status = uefi_call_wrapper(file->Read, 3, file, &file_size, buffer);
     if (status != EFI_SUCCESS) {
         Print(L"load_kernel: ERROR reading file.\t%d\n", status);
     }
 
     Elf64_Ehdr elf;
+    Elf64_Phdr *programs;
     parse_ehdr(buffer, &elf);
-
+    parse_phdr(buffer, elf, &programs);
 }

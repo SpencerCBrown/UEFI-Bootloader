@@ -1,9 +1,8 @@
 #include <efi.h>
 #include <efilib.h>
 
+#include "loader.h"
 #include "utils.h"
-
-#include "elf.h"
 
 EFI_STATUS
 EFIAPI

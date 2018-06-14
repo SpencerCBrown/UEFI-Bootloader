@@ -1,11 +1,11 @@
 ARCH	    = $(shell uname -m | sed s,i[3456789]86,ia32,)
 
 # Boot-Loader
-BOOTLOADER_OBJS = $(addprefix boot/, main.o utils.o)
+BOOTLOADER_OBJS = $(addprefix boot/, main.o utils.o loader.o)
 #Kernel
 KERNEL_OBJS = $(addprefix system/, kernel.o graphics.o)
 
-OBJS	    = boot/main.o boot/utils.o
+OBJS	    = boot/main.o boot/utils.o boot/loader.o
 TARGET	  = hello.efi
 
 EFIINC	  = /usr/include/efi
