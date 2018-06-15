@@ -18,7 +18,7 @@ void printMemoryMap(EFI_MEMORY_DESCRIPTOR* map, UINTN map_size, UINTN descriptor
         Print(L"\n");
         Print(L"Physical Address of i-th memory descriptor:\t%x\n", desc.PhysicalStart);
         Print(L"Virtual Address of i-th memory descriptor:\t%x\n", desc.VirtualStart);
-        Print(L"Memory Type of i-th memory descriptor:\t%d\n", desc.Type);
+        Print(L"Memory Type of i-th memory descriptor:\t%x\n", desc.Type);
         uefi_call_wrapper(BS->Stall, 1, 4000000);
 
         mem += descriptor_size;

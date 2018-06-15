@@ -3,6 +3,9 @@
 
 #include "loader.h"
 
+uint64_t KERNEL_MEMTYPE = 0x80000000;
+uint64_t KERNEL_VIRT_ADDRESS = 0xFFFF800000000000;
+
 void open_kernel_image(EFI_HANDLE ImageHandle, EFI_FILE_PROTOCOL **file)
 {
     EFI_STATUS status = 0;
@@ -115,7 +118,6 @@ void parse_phdr(void * const buffer, Elf64_Ehdr ehdr, Elf64_Phdr **phdr)
     buf += ehdr.e_phoff;
     status = uefi_call_wrapper(BS->AllocatePool, 3, EfiLoaderData, ehdr.e_phnum * sizeof(Elf64_Phdr), (void **) phdr);
 
-
     for (int i = 0; i < ehdr.e_phnum; ++i) {
         Elf64_Phdr *p = *phdr + i;
         p->p_type = *((Elf64_Word*) buf);
@@ -138,16 +140,28 @@ void parse_phdr(void * const buffer, Elf64_Ehdr ehdr, Elf64_Phdr **phdr)
 }
 
 /* Takes Elf64_Phdr buffer and loads each to memory */
-void elf_load_phdr_buffer(Elf64_Ehdr elf_header, Elf64_Phdr *p_headers)
+void elf_load_phdr_buffer(void * const buffer, int num, Elf64_Phdr *p_headers)
 {
     EFI_STATUS status;
-    int pheader_count = elf_header.e_phnum;
-    status = uefi_call_wrapper(BS->AllocatePool, 3, EfiLoaderData, pheader_count * sizeof(Elf64_Phdr), (void **) p_headers);
-}
-
-int elf_calculate_load_memsz(Elf64_Ehdr ehdr)
-{
-    return 0;
+    for (int i = 0; i < num; ++i) {
+        if (p_headers[i].p_type == PT_LOAD) {
+            EFI_PHYSICAL_ADDRESS addr = 0x10000;// TODO: p_headers[i].p_vaddr - KERNEL_VIRT_ADDRESS;
+            status = uefi_call_wrapper(BS->AllocatePages, 4, AllocateAddress, KERNEL_MEMTYPE, p_headers[i].p_memsz / 0x1000, &addr);
+            if (status != EFI_SUCCESS) {
+                Print(L"FAILED ON FIRST ALLOCATION\n");
+                if (status == EFI_NOT_FOUND) {
+                    status = uefi_call_wrapper(BS->AllocatePages, 4, AllocateAnyPages, KERNEL_MEMTYPE, p_headers[i].p_memsz / 0x100, &addr);
+                    if (status != EFI_SUCCESS) {
+                        Print(L"COULDN'T ALLOCATE AT ALL\n");
+                    } else {
+                        EFI_PHYSICAL_ADDRESS* ad = (EFI_PHYSICAL_ADDRESS*) addr;
+                    }
+                }
+            } else {
+                Print(L"OMG IT WORKS!!!");
+            }
+        }
+    }
 }
 
 void load_kernel(EFI_HANDLE ImageHandle)
@@ -177,4 +191,5 @@ void load_kernel(EFI_HANDLE ImageHandle)
     Elf64_Phdr *programs;
     parse_ehdr(buffer, &elf);
     parse_phdr(buffer, elf, &programs);
+    elf_load_phdr_buffer(buffer, elf.e_phnum, programs);
 }
